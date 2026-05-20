@@ -2,45 +2,51 @@ import { SendEmailCommand } from "@aws-sdk/client-ses";
 import { sesClient } from "./sesClient.js";
 
 export const sendEmail = async ({
-    to, 
-    subject, 
-    text 
+  to,
+  subject,
+  text,
 }) => {
-    try{
+  try {
 
-        // creating SES email command 
+    const command = new SendEmailCommand({
 
-        const command = new SendEmailCommand({
-            Source: "dev.relevantsearchmedia@gmail.com",    // sender email 
+      // Sender email
+      Source: "dev.relevantsearchmedia@gmail.com",
 
-            // recipient email 
+      // Recipient email
+      Destination: {
+        ToAddresses: [to],
+      },
 
-            Destination: {
-                ToAddresses: [to]
-            }, 
+      // Email content
+      Message: {
+        Subject: {
+          Data: subject,
+        },
 
-            // email content 
+        Body: {
+          Text: {
+            Data: text,
+          },
+        },
+      },
+    });
 
-            Message: {
-                Subject: {
-                    Data: subject 
-                }, 
-                Body: {
-                    Text: {
-                        Data: text 
-                    }
-                }
-            }
-        }) ; 
+    // Send email through SES
+    const response =
+      await sesClient.send(command);
 
-        // Send email through SES 
+    console.log("Email sent");
+    console.log(response);
 
-        const response = await sesClient.send(command) ; 
+    // Return AWS response
+    return response;
 
-        console.log("email sent") ; 
-        console.log(response) ; 
-    }catch(error){
-        console.log("SES error") ; 
-        console.log(error) ; 
-    }
-}
+  } catch (error) {
+
+    console.error("SES Error");
+    console.error(error);
+
+    throw error;
+  }
+};

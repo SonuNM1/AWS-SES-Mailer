@@ -1,58 +1,56 @@
-// Import fs module
+
 import fs from "fs";
 import csv from "csv-parser";
 import { emailQueue } from "../queue/emailQueue.js";
+import { Campaign } from "../models/Campaign.js";
 
-
-export const uploadCSV = async (
-  req,
-  res
-) => {
-
+export const uploadCSV = async (req, res) => {
   try {
 
-    // Array for CSV rows
     const results = [];
-
-    // Read uploaded CSV file
     fs.createReadStream(req.file.path)
-
-      // Parse CSV
       .pipe(csv())
-
-      // Push each row
       .on("data", (data) => {
-
         results.push(data);
       })
 
-      // Finished parsing
       .on("end", async () => {
+        const campaign = await Campaign.create({
+          name: `Campaign-${Date.now()}`,
+          totalEmails: results.length,
+        });
 
-        // Loop through rows
+        console.log(
+          "Campaign Created:",
+          campaign._id
+        );
+
         for (const row of results) {
-
-          // Create queue job
           await emailQueue.add(
             "send-email",
             {
               to: row.email,
-
               subject: row.subject,
+              campaignId: campaign._id,
             }
           );
         }
 
-        // Success response
         res.json({
           success: true,
+
           queued: results.length,
+
+          // MongoDB campaign id
+          campaignId: campaign._id,
         });
       });
 
   } catch (error) {
 
-    console.error("CSV ERROR");
+    console.error(
+      "CSV UPLOAD ERROR"
+    );
 
     console.error(error);
 

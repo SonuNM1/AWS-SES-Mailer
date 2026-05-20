@@ -4,10 +4,20 @@ import mongoose from "mongoose";
 
 const campaignSchema = new mongoose.Schema({
     name: {
-        type: String 
+        type: String,
+        required: true  
     }, 
     totalEmails: {
-        type: Number 
+        type: Number, 
+        required: true  
+    }, 
+    sentCount: {
+        type: Number, 
+        default: 0 
+    }, 
+    failedCount: {
+        type: Number, 
+        default: 0
     }, 
     status: {
         type: String, 
