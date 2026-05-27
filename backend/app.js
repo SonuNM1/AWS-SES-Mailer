@@ -27,7 +27,7 @@ app.use("/", analyticsRoutes) ;
 // only start server after app connects to the database 
 
 const startServer = async () => {
-  try { 
+  try {
 
     await connectDB();
 
